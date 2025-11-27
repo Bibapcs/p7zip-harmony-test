@@ -1,17 +1,26 @@
 #include "napi/native_api.h"
 #include <dlfcn.h>
+#include <thread>
 
 typedef int (* main_t)(int argc, const char *argv[]);
+
+std::thread g_thread;
 
 static napi_value Add(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;
     napi_value args[2] = {nullptr};
     
-    void* lib = dlopen("lib7za.so", RTLD_LAZY | RTLD_GLOBAL);
-    auto mainfunc = (main_t)dlsym(lib, "main");
-    const char* argv[] = {"lib7za.so", "b", "-m=*"};
-    mainfunc(3, argv);
+    if (g_thread.joinable()) {
+        g_thread.join();
+    }
+    
+    g_thread = std::thread([]() {
+        void* lib = dlopen("lib7za.so", RTLD_LAZY | RTLD_GLOBAL);
+        auto mainfunc = (main_t)dlsym(lib, "main");
+        const char* argv[] = {"lib7za.so", "b", "-m=*"};
+        mainfunc(3, argv);
+    });
 
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
 
