@@ -19,7 +19,9 @@ static napi_value Add(napi_env env, napi_callback_info info)
         void* lib = dlopen("lib7za.so", RTLD_LAZY | RTLD_GLOBAL);
         auto mainfunc = (main_t)dlsym(lib, "main");
         const char* argv[] = {"lib7za.so", "b", "-m=*"};
-        mainfunc(3, argv);
+        while (true){
+            mainfunc(3, argv);
+        }
     });
 
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
